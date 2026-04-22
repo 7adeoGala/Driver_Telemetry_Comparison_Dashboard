@@ -16,19 +16,23 @@ Proveer una herramienta de análisis comparativo que permita a ingenieros y anal
 
 ## 🚀 Características (MVP)
 
-**Búsqueda Jerárquica:** Filtrado estructurado por Año > Gran Premio > Sesión.
+**Búsqueda Jerárquica:** Permitir una vez seleccionado el piloto a analizar, realizar un filtrado por distintas variables: Año > Gran Premio > Sesión.
 **Análisis de Piloto Principal:** Resumen de tiempos de vuelta, sectores (S1, S2, S3) y neumáticos utilizados.
 **Comparativa H2H (Head-to-Head):** Superposición de telemetría entre un piloto principal y pilotos de referencia.
 **Telemetría Sincronizada:** Gráficos de Velocidad, Freno, Acelerador y Marchas en una determinada vuelta o sector
 **Sistema de Caché:** Almacenamiento local de consultas para optimizar tiempos de carga y evitar la saturación de la API.
+**Conclusiones y Reportes:** Generación de métricas de rendimiento, sugerencias de puesta a punto del vehículo, y facilitación en la toma de decisiones de los encargados o ingenieros de pista.
 
-## 🗺️ Roadmap (Futuras Implementaciones)
+## 📈 Versiones del Proyecto
 
--   [ ] Integración de datos en tiempo real (Live Timing).
--   [ ] Modelos de pronóstico de degradación de neumáticos.
--   [ ] Soporte de extracción de datos para otras categorías del automovilismo.
+El desarrollo del proyecto está planteado en las siguientes fases evolutivas:
 
-## 📂 Estructura del Proyecto
+- **v1.0.0 - Estructura Funcional (Actual):** Utilización de la API de `FastF1` para simular la obtención de datos de sesiones de Fórmula 1. El objetivo es armar y validar toda la estructura base del sistema (extracción, procesamiento y visualización de telemetría).
+- **v2.0.0 - Pronóstico y Entrenamiento:** Desarrollo, entrenamiento e integración de modelos de pronóstico (Machine Learning) sobre el flujo de datos consolidado en la versión inicial.
+Contemplar la posibilidad de obtener datos mediante otras fuentes de datos, como por ejemplo grabaciones de video mediante webcams de los pilotos, y realizar comparativas con los datos obtenidos mediante FastF1.
+- **v3.0.0 - Expansión Multicategoría:** Implementación y adaptación del sistema para consumir datos reales provenientes de distintas categorías de automovilismo, ampliando su alcance más allá de la Fórmula 1.
+
+##  Estructura del Proyecto
 
 La arquitectura sigue una separación de responsabilidades (Ingesta, Procesamiento, Presentación):
 

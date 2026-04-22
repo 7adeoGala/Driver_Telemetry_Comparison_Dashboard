@@ -1,12 +1,12 @@
-# 🏎️ F1 Telemetry & Performance Dashboard
+# Driver Telemetry Comparison Dashboard
 
 Un sistema interactivo y escalable para el análisis de rendimiento en la Fórmula 1, diseñado para equipos permitiendo la extracción, procesamiento y visualización de datos de telemetría y tiempos de vuelta de sus pilotos, y compararlos con otros,utilizando la API de FastF1 para simular la obtención de datos de las distintas sesiones.
 
-## 🎯 Objetivo del Proyecto
+## Objetivo del Proyecto
 
 Proveer una herramienta de análisis comparativo que permita a ingenieros y analistas evaluar el rendimiento de los pilotos en diferentes sesiones (Prácticas, Clasificación, Sprint, Carrera). El sistema está diseñado con una arquitectura modular para facilitar la futura integración de pronósticos basados en machine learning y análisis en tiempo real.
 
-## ⚙️ Stack Tecnológico
+## Tecnologías
 
 **Lenguaje:** Python 
 **Ingesta de Datos:** `FastF1`
@@ -14,7 +14,7 @@ Proveer una herramienta de análisis comparativo que permita a ingenieros y anal
 **Frontend/UI:** `Streamlit`
 **Visualización:** `Plotly`, `Matplotlib`
 
-## 🚀 Características (MVP)
+## Características (MVP)
 
 **Búsqueda Jerárquica:** Permitir una vez seleccionado el piloto a analizar, realizar un filtrado por distintas variables: Año > Gran Premio > Sesión.
 **Análisis de Piloto Principal:** Resumen de tiempos de vuelta, sectores (S1, S2, S3) y neumáticos utilizados.
@@ -23,7 +23,7 @@ Proveer una herramienta de análisis comparativo que permita a ingenieros y anal
 **Sistema de Caché:** Almacenamiento local de consultas para optimizar tiempos de carga y evitar la saturación de la API.
 **Conclusiones y Reportes:** Generación de métricas de rendimiento, sugerencias de puesta a punto del vehículo, y facilitación en la toma de decisiones de los encargados o ingenieros de pista.
 
-## 📈 Versiones del Proyecto
+## Versiones
 
 El desarrollo del proyecto está planteado en las siguientes fases evolutivas:
 
@@ -32,7 +32,7 @@ El desarrollo del proyecto está planteado en las siguientes fases evolutivas:
 Contemplar la posibilidad de obtener datos mediante otras fuentes de datos, como por ejemplo grabaciones de video mediante webcams de los pilotos, y realizar comparativas con los datos obtenidos mediante FastF1.
 - **v3.0.0 - Expansión Multicategoría:** Implementación y adaptación del sistema para consumir datos reales provenientes de distintas categorías de automovilismo, ampliando su alcance más allá de la Fórmula 1.
 
-##  Estructura del Proyecto
+##  Estructura
 
 La arquitectura sigue una separación de responsabilidades (Ingesta, Procesamiento, Presentación):
 

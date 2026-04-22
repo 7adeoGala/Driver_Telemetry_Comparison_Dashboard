@@ -9,7 +9,7 @@ Proveer una herramienta de análisis comparativo que permita a ingenieros y anal
 ## Tecnologías
 
 **Lenguaje:** Python 
-**Ingesta de Datos:** `FastF1`
+**Ingesta de Datos:** `FastF1` --> Documentación: https://docs.fastf1.dev/index.html
 **Procesamiento:** `Pandas`, `NumPy`
 **Frontend/UI:** `Streamlit`
 **Visualización:** `Plotly`, `Matplotlib`

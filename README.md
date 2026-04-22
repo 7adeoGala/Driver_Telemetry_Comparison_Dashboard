@@ -49,6 +49,7 @@ f1-dashboard/
 ├── requirements.txt        # Dependencias del proyecto
 ├── .gitignore              # Archivos a ignorar (entornos virtuales, caché)
 └── README.md               # Documentación del proyecto
+```
 
 ## Instalación
 

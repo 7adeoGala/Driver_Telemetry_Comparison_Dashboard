@@ -49,3 +49,35 @@ f1-dashboard/
 ├── requirements.txt        # Dependencias del proyecto
 ├── .gitignore              # Archivos a ignorar (entornos virtuales, caché)
 └── README.md               # Documentación del proyecto
+
+## Instalación
+
+1. Crear el entorno virtual:
+
+```bash
+uv venv
+```
+
+2. Activar el entorno virtual:
+
+```bash
+uv .venv\Scripts\Activate
+```
+
+3. Instalar las dependencias:
+
+```bash
+uv pip install streamlit fastf1 plotly pandas numpy
+```
+
+4. Guardar las dependencias en el archivo requirements.txt:
+
+```bash
+uv pip freeze > requirements.txt
+```
+
+5. Ejecutar la aplicación:
+
+```bash
+streamlit run app.py
+```

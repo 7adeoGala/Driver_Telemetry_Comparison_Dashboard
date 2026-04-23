@@ -1,12 +1,4 @@
 import fastf1
-import os
-
-# Asegurar que el directorio de caché exista
-os.makedirs('data/', exist_ok=True)
-
-# Configuración Obligatoria de Caché
-# Esto evita saturar la API y acelera las peticiones subsecuentes
-fastf1.Cache.enable_cache('data/')
 
 def get_session_data(year: int, gp: str, session: str) -> fastf1.core.Session:
     """
@@ -22,7 +14,8 @@ def get_session_data(year: int, gp: str, session: str) -> fastf1.core.Session:
     """
     try:
         f1_session = fastf1.get_session(year, gp, session)
-        f1_session.load()
+        # Descargamos solo lo estrictamente necesario en RAM (sin guardar a disco)
+        f1_session.load(telemetry=True, weather=True, messages=False)
         return f1_session
     except Exception as e:
         print(f"Error cargando los datos de la sesión: {e}")

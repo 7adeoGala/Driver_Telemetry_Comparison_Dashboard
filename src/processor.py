@@ -40,8 +40,8 @@ def get_telemetry_data(year: int, gp: str, session: str, main_driver: str, ref_d
                 
             # Extraer la vuelta más rápida
             fastest_lap = driver_laps.pick_fastest()
-            if pd.isna(fastest_lap['LapTime']):
-                print(f"Advertencia: La vuelta más rápida de {driver} es inválida (NaN). Omitiendo.")
+            if fastest_lap is None or pd.isna(fastest_lap.get('LapTime')):
+                print(f"Advertencia: La vuelta más rápida de {driver} es inválida (NaN o None). Omitiendo.")
                 continue
             
             # Extraer telemetría
@@ -53,7 +53,7 @@ def get_telemetry_data(year: int, gp: str, session: str, main_driver: str, ref_d
                 telemetry = telemetry.add_distance()
             
             # Seleccionar las columnas estándar de FastF1 requeridas para la transformación
-            cols_to_keep = ['Distance', 'Speed', 'Throttle', 'Brake', 'nGear']
+            cols_to_keep = ['Distance', 'Speed', 'Throttle', 'Brake', 'nGear', 'X', 'Y']
             
             # Validar que no falten datos inesperados en la API
             missing_cols = [col for col in cols_to_keep if col not in telemetry.columns]
@@ -73,7 +73,7 @@ def get_telemetry_data(year: int, gp: str, session: str, main_driver: str, ref_d
             telemetry['Brake'] = telemetry['Brake'].astype(int)
             
             # Reordenar las columnas exactamente como lo exige el contrato con el Frontend
-            telemetry = telemetry[['Driver', 'Distance', 'Speed', 'Throttle', 'Brake', 'Gear']]
+            telemetry = telemetry[['Driver', 'Distance', 'Speed', 'Throttle', 'Brake', 'Gear', 'X', 'Y']]
             
             all_telemetry.append(telemetry)
             
@@ -86,7 +86,7 @@ def get_telemetry_data(year: int, gp: str, session: str, main_driver: str, ref_d
         final_df = pd.concat(all_telemetry, ignore_index=True)
     else:
         # Retornar un dataframe vacío respetando el contrato en caso de no haber datos en absoluto
-        final_df = pd.DataFrame(columns=['Driver', 'Distance', 'Speed', 'Throttle', 'Brake', 'Gear'])
+        final_df = pd.DataFrame(columns=['Driver', 'Distance', 'Speed', 'Throttle', 'Brake', 'Gear', 'X', 'Y'])
     
     return final_df
 
@@ -109,12 +109,27 @@ def get_session_summary(year: int, gp: str, session: str, driver: str) -> dict:
             "Driver": driver
         }
         
+        # Agregar clima general de la sesión (promedio para evitar variaciones extremas en un punto)
+        try:
+            if hasattr(f1_session, 'weather_data') and not f1_session.weather_data.empty:
+                summary['TrackTemp'] = round(f1_session.weather_data['TrackTemp'].mean(), 1)
+                summary['AirTemp'] = round(f1_session.weather_data['AirTemp'].mean(), 1)
+        except Exception:
+            pass
+            
+        def extract_sectors(fastest_lap, sum_dict):
+            if fastest_lap is not None and not pd.isna(fastest_lap.get('LapTime')):
+                for s in ['Sector1', 'Sector2', 'Sector3']:
+                    col = f"{s}Time"
+                    sum_dict[s] = "N/A" if pd.isna(fastest_lap.get(col)) else str(fastest_lap[col]).split(' ')[-1][:-3]
+        
         # Prácticas (FP1, FP2, FP3)
         if session in ['FP1', 'FP2', 'FP3']:
             summary['TotalLaps'] = len(driver_laps)
             
             fastest_lap = driver_laps.pick_fastest()
-            summary['BestTime'] = "N/A" if pd.isna(fastest_lap.get('LapTime')) else str(fastest_lap['LapTime']).split(' ')[-1][:-3]
+            summary['BestTime'] = "N/A" if fastest_lap is None or pd.isna(fastest_lap.get('LapTime')) else str(fastest_lap['LapTime']).split(' ')[-1][:-3]
+            extract_sectors(fastest_lap, summary)
             
             summary['FinalPosition'] = driver_results.get('Position', 'N/A')
             
@@ -125,7 +140,7 @@ def get_session_summary(year: int, gp: str, session: str, driver: str) -> dict:
                     compound = group['Compound'].iloc[0]
                     laps_count = len(group)
                     stint_fastest = group.pick_fastest()
-                    stint_time = "N/A" if pd.isna(stint_fastest.get('LapTime')) else str(stint_fastest['LapTime']).split(' ')[-1][:-3]
+                    stint_time = "N/A" if stint_fastest is None or pd.isna(stint_fastest.get('LapTime')) else str(stint_fastest['LapTime']).split(' ')[-1][:-3]
                     stints.append({"Stint": int(stint), "Compound": compound, "Laps": laps_count, "BestTime": stint_time})
             summary['Stints'] = stints
 
@@ -136,19 +151,24 @@ def get_session_summary(year: int, gp: str, session: str, driver: str) -> dict:
             for q_session in ['Q1', 'Q2', 'Q3']:
                 time = driver_results.get(q_session, pd.NaT)
                 summary[f'{q_session}_Time'] = "N/A" if pd.isna(time) else str(time).split(' ')[-1][:-3]
+            
+            fastest_lap = driver_laps.pick_fastest()
+            extract_sectors(fastest_lap, summary)
 
         # Carrera (R, SQ, SR)
         else:
             summary['FinalPosition'] = driver_results.get('Position', 'N/A')
             
             grid_pos = driver_results.get('GridPosition', 'N/A')
+            summary['GridPosition'] = int(grid_pos) if pd.notna(grid_pos) else "N/A"
             if pd.notna(grid_pos) and pd.notna(summary['FinalPosition']):
                 summary['PositionsGained'] = int(grid_pos - summary['FinalPosition'])
             else:
                 summary['PositionsGained'] = "N/A"
             
             fastest_lap = driver_laps.pick_fastest()
-            summary['FastestLap'] = "N/A" if pd.isna(fastest_lap.get('LapTime')) else str(fastest_lap['LapTime']).split(' ')[-1][:-3]
+            summary['FastestLap'] = "N/A" if fastest_lap is None or pd.isna(fastest_lap.get('LapTime')) else str(fastest_lap['LapTime']).split(' ')[-1][:-3]
+            extract_sectors(fastest_lap, summary)
             
             # Estrategia de paradas
             strategy = []
@@ -162,5 +182,7 @@ def get_session_summary(year: int, gp: str, session: str, driver: str) -> dict:
             
         return summary
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"Error extrayendo resumen de sesión: {e}")
         return {"error": str(e)}

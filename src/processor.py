@@ -89,3 +89,78 @@ def get_telemetry_data(year: int, gp: str, session: str, main_driver: str, ref_d
         final_df = pd.DataFrame(columns=['Driver', 'Distance', 'Speed', 'Throttle', 'Brake', 'Gear'])
     
     return final_df
+
+def get_session_summary(year: int, gp: str, session: str, driver: str) -> dict:
+    """
+    Extrae métricas resumidas de la sesión para un piloto específico,
+    dependiendo del tipo de sesión.
+    """
+    try:
+        f1_session = get_session_data(year, gp, session)
+        
+        if driver not in f1_session.results['Abbreviation'].values:
+            return {"error": f"El piloto {driver} no participó en esta sesión."}
+            
+        driver_results = f1_session.results[f1_session.results['Abbreviation'] == driver].iloc[0]
+        driver_laps = f1_session.laps.pick_driver(driver)
+        
+        summary = {
+            "SessionType": session,
+            "Driver": driver
+        }
+        
+        # Prácticas (FP1, FP2, FP3)
+        if session in ['FP1', 'FP2', 'FP3']:
+            summary['TotalLaps'] = len(driver_laps)
+            
+            fastest_lap = driver_laps.pick_fastest()
+            summary['BestTime'] = "N/A" if pd.isna(fastest_lap.get('LapTime')) else str(fastest_lap['LapTime']).split(' ')[-1][:-3]
+            
+            summary['FinalPosition'] = driver_results.get('Position', 'N/A')
+            
+            # Stints / Neumáticos
+            stints = []
+            if not driver_laps.empty:
+                for stint, group in driver_laps.groupby('Stint'):
+                    compound = group['Compound'].iloc[0]
+                    laps_count = len(group)
+                    stint_fastest = group.pick_fastest()
+                    stint_time = "N/A" if pd.isna(stint_fastest.get('LapTime')) else str(stint_fastest['LapTime']).split(' ')[-1][:-3]
+                    stints.append({"Stint": int(stint), "Compound": compound, "Laps": laps_count, "BestTime": stint_time})
+            summary['Stints'] = stints
+
+        # Clasificación (Q)
+        elif session == 'Q':
+            summary['FinalPosition'] = driver_results.get('Position', 'N/A')
+            
+            for q_session in ['Q1', 'Q2', 'Q3']:
+                time = driver_results.get(q_session, pd.NaT)
+                summary[f'{q_session}_Time'] = "N/A" if pd.isna(time) else str(time).split(' ')[-1][:-3]
+
+        # Carrera (R, SQ, SR)
+        else:
+            summary['FinalPosition'] = driver_results.get('Position', 'N/A')
+            
+            grid_pos = driver_results.get('GridPosition', 'N/A')
+            if pd.notna(grid_pos) and pd.notna(summary['FinalPosition']):
+                summary['PositionsGained'] = int(grid_pos - summary['FinalPosition'])
+            else:
+                summary['PositionsGained'] = "N/A"
+            
+            fastest_lap = driver_laps.pick_fastest()
+            summary['FastestLap'] = "N/A" if pd.isna(fastest_lap.get('LapTime')) else str(fastest_lap['LapTime']).split(' ')[-1][:-3]
+            
+            # Estrategia de paradas
+            strategy = []
+            if not driver_laps.empty:
+                for stint, group in driver_laps.groupby('Stint'):
+                    comp = group['Compound'].iloc[0]
+                    if pd.notna(comp):
+                        strategy.append(str(comp))
+            summary['Strategy'] = " ➡️ ".join(strategy) if strategy else "N/A"
+            summary['PitStops'] = max(0, len(strategy) - 1)
+            
+        return summary
+    except Exception as e:
+        print(f"Error extrayendo resumen de sesión: {e}")
+        return {"error": str(e)}

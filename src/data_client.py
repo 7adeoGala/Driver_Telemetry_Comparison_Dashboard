@@ -1,5 +1,7 @@
 import fastf1
+import streamlit as st
 
+@st.cache_resource(ttl=3600)
 def get_session_data(year: int, gp: str, session: str) -> fastf1.core.Session:
     """
     Descarga y carga la información de telemetría de una sesión de F1.
